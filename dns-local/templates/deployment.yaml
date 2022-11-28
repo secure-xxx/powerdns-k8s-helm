@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/dnsdist-conf.yaml") . | sha256sum }}
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      {{- range .Values.app }}
+      - name: {{ .name }}
+        image: {{ .image }}
+        env:
+            {{- range $key, $value := .envVars }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range  .envSecretVars}}
+            - name: {{ .envVariableName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .name }}
+                  key: {{ .key }}
+            {{- end }}
+        ports:
+        - containerPort: {{ .ports }}
+        {{- range  .volumeMounts}}
+        volumeMounts:
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+        {{- end}}
+      {{- end }}
+      volumes:
+      - name: dnsdist-conf
+        configMap:
+          name: dnsdist-conf

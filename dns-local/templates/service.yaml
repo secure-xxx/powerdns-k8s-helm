@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+  - name: admin
+    protocol: TCP
+    targetPort: 3031
+    port: 80
+  - name: dnsdist
+    protocol: TCP
+    targetPort: 8083
+    port: 83
+  - name: recursor
+    protocol: TCP
+    targetPort: 8082
+    port: 82
+  - name: authoritative
+    protocol: TCP
+    targetPort: 8081
+    port: 81
+  type: ClusterIP

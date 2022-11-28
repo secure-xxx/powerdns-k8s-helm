@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-dns-tcp
+  annotations:
+    kubernetes.io/elb.id: {{ .Values.balancerid }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+  - name: dns
+    protocol: TCP
+    targetPort: 3053
+    port: 53
+  type: LoadBalancer

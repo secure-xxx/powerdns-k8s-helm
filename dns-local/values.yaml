@@ -1,0 +1,158 @@
+replicaCount: 3
+# Specify balancer ID for create listener  
+balancerid: XXXXXXXXXXXX
+
+app:
+  admin:
+    name: admin
+    image: pdns-admin
+    ports: 3031
+    envVars:
+      ADMIN_PDNS_API_URL: http://127.0.0.1:8081
+      ADMIN_DB_HOST: XXXXXXXXXXXX
+      ADMIN_DB_NAME: admin
+      ADMIN_DB_PORT: 6432
+    envSecretVars:
+      - envVariableName: ADMIN_PDNS_API_KEY
+        name: secretvars
+        key: ADMIN_PDNS_API_KEY
+        optional: false
+      - envVariableName: ADMIN_USER_PASSWORD
+        name: secretvars
+        key: ADMIN_USER_PASSWORD
+        optional: false
+      - envVariableName: ADMIN_DB_USER
+        name: secretvars
+        key: ADMIN_DB_USER
+        optional: false
+      - envVariableName: ADMIN_DB_PASS
+        name: secretvars
+        key: ADMIN_DB_PASS
+        optional: false
+    livenessProbe:
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:3031
+      initialDelaySeconds: 5
+      periodSeconds: 60
+
+  authoritative:
+    name: authoritative
+    image: pdns-authoritative
+    ports: 2053
+    envVars:
+      AUTHORITATIVE_API: yes
+      AUTHORITATIVE_WEBSERVER: yes
+      AUTHORITATIVE_DB_HOST: XXXXXXXXXXXX
+      AUTHORITATIVE_DB_NAME: authoritative
+      AUTHORITATIVE_DB_PORT: 6432
+      AUTHORITATIVE_LOG_DNS_QUERIES: yes
+      AUTHORITATIVE_LOG_DNS_DETAILS: yes
+      AUTHORITATIVE_QUERY_LOGGING: yes
+      AUTHORITATIVE_DNSUPDATE: yes
+      AUTHORITATIVE_ALLOW_DNSUPDATE_FROM: 0.0.0.0/0
+      AUTHORITATIVE_LOCAL_PORT: 2053
+    envSecretVars:
+      - envVariableName: AUTHORITATIVE_API_KEY
+        name: secretvars
+        key: AUTHORITATIVE_API_KEY
+        optional: false
+      - envVariableName: AUTHORITATIVE_WEBSERVER_PASSWORD
+        name: secretvars
+        key: AUTHORITATIVE_WEBSERVER_PASSWORD
+        optional: false
+      - envVariableName: AUTHORITATIVE_DB_PASS
+        name: secretvars
+        key: AUTHORITATIVE_DB_PASS
+        optional: false
+      - envVariableName: AUTHORITATIVE_DB_USER
+        name: secretvars
+        key: AUTHORITATIVE_DB_USER
+        optional: false
+    livenessProbe:
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:8081
+      initialDelaySeconds: 5
+      periodSeconds: 60
+
+  recursor:
+    name: recursor
+    image: pdns-recursor
+    ports: 1053
+    envVars:
+      RECURSOR_DNSSEC: validate
+      RECURSOR_FORWARD_ZONES: sys=127.0.0.1:2053
+      RECURSOR_QUIET: no
+      RECURSOR_TRUST_ANCHORS: sys=54970 13 1 27efe1c1a790c3cbb43b947d6d6dfac62507097e
+      RECURSOR_WEBSERVER: yes
+      RECURSOR_LOCALPORT: 1053
+    envSecretVars:
+      - envVariableName: RECURSOR_API_KEY
+        name: secretvars
+        key: RECURSOR_API_KEY
+        optional: false
+      - envVariableName: RECURSOR_WEBSERVER_PASSWORD
+        name: secretvars
+        key: RECURSOR_WEBSERVER_PASSWORD
+        optional: false
+    livenessProbe:
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:8082
+      initialDelaySeconds: 5
+      periodSeconds: 60
+
+  dnsdist:
+    name: dnsdist
+    image: pdns-dist
+    ports: 3053
+    envVars:
+      DNSDIST_PLAIN: yes
+      DNSDIST_QUIET: no
+      DNSDIST_WEBSERVER: yes
+    envSecretVars:
+      - envVariableName: DNSDIST_API_KEY
+        name: secretvars
+        key: DNSDIST_API_KEY
+        optional: false
+      - envVariableName: DNSDIST_WEBSERVER_PASSWORD
+        name: secretvars
+        key: DNSDIST_WEBSERVER_PASSWORD
+        optional: false
+    livenessProbe:
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:8083
+      initialDelaySeconds: 5
+      periodSeconds: 60
+    volumeMounts:
+    - name: dnsdist-conf
+      mountPath: /etc/dnsdist/
+      subPath: dnsdist.conf
+
+ingress:
+  enabled: true
+  className:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    nginx.ingress.kubernetes.io/enable-cors: 'true'
+    nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+  adminport: 80
+  dnsdistport: 83
+  recursorport: 82
+  authoritativeport: 81
+  host: XXXXXXXXXXXX
+  tls:
+    enabled: true
+    secretName: XXXXXXXXXXXX
+    hosts:
+      - XXXXXXXXXXXX
