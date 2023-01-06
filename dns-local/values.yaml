@@ -80,7 +80,7 @@ app:
 
   recursor:
     name: recursor
-    image: dreg.sberhealth.pro/library/pdns-recursor:latest
+    image: pdns-recursor:latest
     ports: 1053
     envVars:
       RECURSOR_DNSSEC: off
