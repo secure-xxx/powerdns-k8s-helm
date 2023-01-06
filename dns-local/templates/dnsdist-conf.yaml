@@ -8,19 +8,15 @@ data:
     includeDirectory("/etc/dnsdist/conf.d")
     
     infolog("Loading DNS server")
-    
-    -- Add DNS servers
-    -- Recursor
-    newServer({address="XXXXXXXXXXXX", name="recursor"})
+
+    -- Local Recursor
+    newServer({address="127.0.0.1:1053", name="local-recursor"})
+
     -- Local authoritative server
     newServer({address="127.0.0.1:2053", pool="authoritative"})
-
-    -- Set routes for domains
-    addAction(AndRule({makeRule({"XXXXXXXXXXXX.XX.", "XXXXXXXXXXXX.XX.", "XXXXXXXXXXXX.XX."}),  RDRule()}), PoolAction("authoritative"))
     
     -- Set routes for Zone Transfer
     addAction(OrRule({QTypeRule(DNSQType.SOA), QTypeRule(DNSQType.AXFR), QTypeRule(DNSQType.IXFR)}), PoolAction("authoritative"))
-    
     
     -- Set ACLs
     setACL('0.0.0.0/0')
@@ -37,10 +33,14 @@ data:
     -- Drop all queries for class CHAOS
     addAction(QClassRule(DNSClass.CHAOS), DropAction())
     
-    -- Block hosts for 30 minutes that exceed 100 queries in 1 seconds
+    -- Block hosts for 30 minutes that exceed 1000 queries in 1 seconds
     function maintenance()
-        addDynBlocks(exceedQRate(100, 1), "BANNED FOR QUERY OVERFLOW", 1800)
+        addDynBlocks(exceedQRate(1000, 1), "BANNED FOR QUERY OVERFLOW", 1800)
     end
+
+    -- Cache responses
+    -- local packet_cache = newPacketCache(10000)
+    -- getPool(""):setCache(packet_cache)
     
     webserver("0.0.0.0:8083")
     setWebserverConfig({password=os.getenv("DNSDIST_WEBSERVER_PASSWORD"), apiKey=os.getenv("DNSDIST_API_KEY"), acl="0.0.0.0/0"})

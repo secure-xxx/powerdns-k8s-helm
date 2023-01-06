@@ -80,13 +80,13 @@ app:
 
   recursor:
     name: recursor
-    image: pdns-recursor
+    image: dreg.sberhealth.pro/library/pdns-recursor:latest
     ports: 1053
     envVars:
-      RECURSOR_DNSSEC: validate
-      RECURSOR_FORWARD_ZONES: sys=127.0.0.1:2053
+      RECURSOR_DNSSEC: off
+      RECURSOR_FORWARD_ZONES_RECURSE: domain1.local=127.0.0.1:2053, domain2.local=127.0.0.1:2053, .=IP-UPSTREAM-RECURSOR1;IP-UPSTREAM-RECURSOR2
       RECURSOR_QUIET: no
-      RECURSOR_TRUST_ANCHORS: sys=54970 13 1 27efe1c1a790c3cbb43b947d6d6dfac62507097e
+      #RECURSOR_TRUST_ANCHORS: sys=54970 13 1 27efe1c1a790c3cbb43b947d6d6dfac62507097e
       RECURSOR_WEBSERVER: yes
       RECURSOR_LOCALPORT: 1053
     envSecretVars:
