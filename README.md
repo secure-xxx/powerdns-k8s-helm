@@ -1,11 +1,5 @@
+Готовый самописный хельм для развертывания PowerdnsAdmin + pdns recursor + pdns auth + dnsdist
 Based on https://github.com/chrisss404/powerdns
-
-Full compilation of distributed DNS server with admin web gui, authoritative server, dns balancer.
-
-# Introduction
-
-Get your own secure nameserver up and running within minutes, using this dockerized installation of the PowerDNS nameserver.
-
 Source code of PowerDNS here: https://github.com/PowerDNS/pdns
 
 ## Private Recursor
